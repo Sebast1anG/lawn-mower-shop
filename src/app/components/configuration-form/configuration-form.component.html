@@ -1,0 +1,163 @@
+<form [formGroup]="configurationForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>Typ silnika</mat-label>
+      <mat-select formControlName="engineType">
+        <mat-option *ngFor="let type of engineTypes" [value]="type">
+          {{ type }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="configurationForm.get('engineType')?.hasError('required')">
+        Typ silnika jest wymagany.
+      </mat-error>
+    </mat-form-field>
+  
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>Marka</mat-label>
+      <mat-select formControlName="brand">
+        <mat-option *ngFor="let brand of brands" [value]="brand">
+          {{ brand }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="configurationForm.get('brand')?.hasError('required')">
+        Marka jest wymagana.
+      </mat-error>
+    </mat-form-field>
+  
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>Model</mat-label>
+      <mat-select formControlName="model" [disabled]="models.length === 0">
+        <mat-option *ngFor="let model of models" [value]="model">
+          {{ model }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="configurationForm.get('model')?.hasError('required')">
+        Model jest wymagany.
+      </mat-error>
+    </mat-form-field>
+  
+    <div *ngIf="configurationForm.contains('combustionSpecs')" formGroupName="combustionSpecs">
+      <mat-form-field appearance="fill">
+        <mat-label>Pojemność silnika (cm³)</mat-label>
+        <input matInput formControlName="engineCapacity" type="number" min="50" max="200" placeholder="50-200 cm³">
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.engineCapacity')?.hasError('required')">
+          Pojemność silnika jest wymagana.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.engineCapacity')?.hasError('min')">
+          Minimalna wartość to 50 cm³.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.engineCapacity')?.hasError('max')">
+          Maksymalna wartość to 200 cm³.
+        </mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Pojemność baku (L)</mat-label>
+        <input matInput formControlName="tankCapacity" type="number" min="0.1" max="1" placeholder="0.1-1 L">
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.tankCapacity')?.hasError('required')">
+          Pojemność baku jest wymagana.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.tankCapacity')?.hasError('min')">
+          Minimalna wartość to 0.1 L.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.tankCapacity')?.hasError('max')">
+          Maksymalna wartość to 1 L.
+        </mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Ilość poziomów koszenia</mat-label>
+        <input matInput formControlName="cuttingLevels" type="number" min="5" max="7" placeholder="5-7 poziomów">
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.cuttingLevels')?.hasError('required')">
+          Ilość poziomów koszenia jest wymagana.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.cuttingLevels')?.hasError('min')">
+          Minimalna wartość to 5.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('combustionSpecs.cuttingLevels')?.hasError('max')">
+          Maksymalna wartość to 7.
+        </mat-error>
+      </mat-form-field>
+    </div>
+  
+    <div *ngIf="configurationForm.contains('electricSpecs')" formGroupName="electricSpecs">
+      <mat-form-field appearance="fill">
+        <mat-label>Długość kabla (m)</mat-label>
+        <input matInput formControlName="cableLength" type="number" min="10" max="30" placeholder="10-30 m">
+        <mat-error *ngIf="configurationForm.get('electricSpecs.cableLength')?.hasError('required')">
+          Długość kabla jest wymagana.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('electricSpecs.cableLength')?.hasError('min')">
+          Minimalna wartość to 10 m.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('electricSpecs.cableLength')?.hasError('max')">
+          Maksymalna wartość to 30 m.
+        </mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Ilość ostrzy</mat-label>
+        <input matInput formControlName="bladesCount" type="number" min="1" max="4" placeholder="1-4 ostrzy">
+        <mat-error *ngIf="configurationForm.get('electricSpecs.bladesCount')?.hasError('required')">
+          Ilość ostrzy jest wymagana.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('electricSpecs.bladesCount')?.hasError('min')">
+          Minimalna wartość to 1 ostrze.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('electricSpecs.bladesCount')?.hasError('max')">
+          Maksymalna wartość to 4 ostrza.
+        </mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Kolor</mat-label>
+        <input matInput formControlName="color" type="text" placeholder="Wybierz kolor">
+        <mat-error *ngIf="configurationForm.get('electricSpecs.color')?.hasError('required')">
+          Kolor jest wymagany.
+        </mat-error>
+      </mat-form-field>
+    </div>
+  
+    <div *ngIf="configurationForm.contains('batterySpecs')" formGroupName="batterySpecs">
+      <mat-form-field appearance="fill">
+        <mat-label>Ilość akumulatorów</mat-label>
+        <input matInput formControlName="batteryCount" type="number" min="1" max="3" placeholder="1-3 akumulatory">
+        <mat-error *ngIf="configurationForm.get('batterySpecs.batteryCount')?.hasError('required')">
+          Ilość akumulatorów jest wymagana.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('batterySpecs.batteryCount')?.hasError('min')">
+          Minimalna wartość to 1 akumulator.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('batterySpecs.batteryCount')?.hasError('max')">
+          Maksymalna wartość to 3 akumulatory.
+        </mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Pojemność akumulatora (Ah)</mat-label>
+        <input matInput formControlName="batteryCapacity" type="number" min="2" max="4" step="0.1" placeholder="2-4 Ah">
+        <mat-error *ngIf="configurationForm.get('batterySpecs.batteryCapacity')?.hasError('required')">
+          Pojemność akumulatora jest wymagana.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('batterySpecs.batteryCapacity')?.hasError('min')">
+          Minimalna wartość to 2 Ah.
+        </mat-error>
+        <mat-error *ngIf="configurationForm.get('batterySpecs.batteryCapacity')?.hasError('max')">
+          Maksymalna wartość to 4 Ah.
+        </mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Kolor</mat-label>
+        <input matInput formControlName="color" type="text" placeholder="Wybierz kolor">
+        <mat-error *ngIf="configurationForm.get('batterySpecs.color')?.hasError('required')">
+          Kolor jest wymagany.
+        </mat-error>
+      </mat-form-field>
+    </div>
+  
+    <button mat-raised-button color="primary" type="submit" [disabled]="!configurationForm.valid">
+        Zapisz i Kontynuuj
+      </button>
+    
+  </form>
+  

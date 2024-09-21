@@ -1,0 +1,58 @@
+<div class="summary-container">
+    <h1>Podsumowanie Zamówienia</h1>
+    
+    <section class="summary-section">
+      <h2>Konfiguracja Kosiarki</h2>
+      <div>
+        <p><strong>Typ silnika:</strong> {{ configurationData.engineType }}</p>
+        <p><strong>Marka:</strong> {{ configurationData.brand }}</p>
+        <p><strong>Model:</strong> {{ configurationData.model }}</p>
+        
+        <ng-container [ngSwitch]="configurationData.engineType">
+          <div *ngSwitchCase="'Spalinowy'">
+            <p><strong>Pojemność silnika:</strong> {{ configurationData.combustionSpecs.engineCapacity }} cm³</p>
+            <p><strong>Pojemność zbiornika paliwa:</strong> {{ configurationData.combustionSpecs.tankCapacity }} l</p>
+            <p><strong>Liczba poziomów cięcia:</strong> {{ configurationData.combustionSpecs.cuttingLevels }}</p>
+          </div>
+          <div *ngSwitchCase="'Elektryczny'">
+            <p><strong>Długość kabla:</strong> {{ configurationData.electricSpecs.cableLength }} m</p>
+            <p><strong>Liczba ostrzy:</strong> {{ configurationData.electricSpecs.bladesCount }}</p>
+            <p><strong>Kolor:</strong> {{ configurationData.electricSpecs.color }}</p>
+          </div>
+          <div *ngSwitchCase="'Akumulatorowy'">
+            <p><strong>Liczba baterii:</strong> {{ configurationData.batterySpecs.batteryCount }}</p>
+            <p><strong>Pojemność baterii:</strong> {{ configurationData.batterySpecs.batteryCapacity }} Ah</p>
+            <p><strong>Kolor:</strong> {{ configurationData.batterySpecs.color }}</p>
+          </div>
+        </ng-container>
+      </div>
+    </section>
+    
+    <section class="summary-section">
+      <h2>Informacje o Zamówieniu</h2>
+      <div>
+        <p><strong>Typ płatności:</strong> {{ orderData.paymentType }}</p>
+        <p><strong>Typ dostawy:</strong> {{ orderData.deliveryType }}</p>
+        <p><strong>Data i godzina dostawy:</strong> {{ orderData.deliveryDateTime | date:'full' }}</p>
+        <p><strong>Adres dostawy:</strong></p>
+        <ul>
+          <li>{{ orderData.deliveryAddress.firstName }} {{ orderData.deliveryAddress.lastName }}</li>
+          <li>{{ orderData.deliveryAddress.street }} {{ orderData.deliveryAddress.houseNumber }}{{ orderData.deliveryAddress.apartmentNumber ? '/' + orderData.deliveryAddress.apartmentNumber : '' }}, 
+            {{ orderData.deliveryAddress.postalCode }} {{ orderData.deliveryAddress.city }}</li>
+        </ul>
+        <p><strong>Adresy osób upoważnionych:</strong></p>
+        <ul>
+          <li *ngFor="let user of orderData.authorizedUsers">
+            {{ user.firstName }} {{ user.lastName }}, {{ user.street }} {{ user.houseNumber }}{{ user.apartmentNumber ? '/' + user.apartmentNumber : '' }}, 
+            {{ user.postalCode }} {{ user.city }}
+          </li>
+        </ul>
+        <p><strong>Cena:</strong> {{ orderData.price | currency }}</p>
+      </div>
+    </section>
+  
+    <button mat-raised-button color="primary" (click)="goToHome()">
+      Nowe Zamówienie
+    </button>
+  </div>
+  

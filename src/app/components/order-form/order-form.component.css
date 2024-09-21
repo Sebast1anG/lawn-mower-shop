@@ -1,0 +1,24 @@
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.address-fieldset,
+.authorized-users-section {
+  border: 1px solid #ccc;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.authorized-user {
+  margin-bottom: 16px;
+}
+
+button {
+  margin-top: 16px;
+}
+
+.mat-form-field-invalid .mat-form-field-wrapper {
+  border-bottom: 2px solid red;
+}
