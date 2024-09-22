@@ -9,7 +9,7 @@ export class LawnMowerService {
 
   private models: { [key: string]: string[] } = {
     Honda: ['XTR100', 'XTR200'],
-    Bosch: ['CUT 2000', 'CUT 3000'],
+    Bosch: ['CUT2000', 'CUT3000'],
     Makita: ['MKE54231', 'TUM4110'],
   };
 

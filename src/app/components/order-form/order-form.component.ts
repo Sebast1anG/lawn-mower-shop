@@ -22,6 +22,7 @@ import { PaymentType } from '../../models/payment-type.enum';
 import { DeliveryType } from '../../models/delivery-type.enum';
 import { Order } from '../../models/order.model';
 import { SelectedModelService } from '../../services/selected-model.service';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-order-form',
@@ -36,6 +37,7 @@ import { SelectedModelService } from '../../services/selected-model.service';
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatCardModule,
   ],
   templateUrl: './order-form.component.html',
   styleUrls: ['./order-form.component.css'],
@@ -49,8 +51,8 @@ export class OrderFormComponent implements OnInit {
   modelPrices: { [key: string]: number } = {
     XTR100: 1200,
     XTR200: 1300,
-    'CUT 2000': 900,
-    'CUT 3000': 1000,
+    CUT2000: 900,
+    CUT3000: 1000,
     MKE54231: 1100,
     TUM4110: 1150,
   };

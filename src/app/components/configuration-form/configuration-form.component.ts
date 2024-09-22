@@ -14,6 +14,7 @@ import { MatInputModule } from '@angular/material/input';
 import { LawnMowerService } from '../../services/lawn-mower.service';
 import { SelectedModelService } from '../../services/selected-model.service';
 import { EngineType } from '../../models/engine-type.enum';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-configuration-form',
@@ -25,6 +26,7 @@ import { EngineType } from '../../models/engine-type.enum';
     MatSelectModule,
     MatButtonModule,
     MatInputModule,
+    MatCardModule,
   ],
   templateUrl: './configuration-form.component.html',
   styleUrls: ['./configuration-form.component.css'],
