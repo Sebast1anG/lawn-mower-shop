@@ -100,6 +100,7 @@ export class OrderFormComponent implements OnInit {
       this.updatePrice();
     });
   }
+
   futureDateValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const selectedDate = new Date(control.value);
