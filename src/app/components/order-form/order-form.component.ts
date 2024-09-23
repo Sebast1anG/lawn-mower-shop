@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -18,11 +18,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { PaymentType } from '../../models/payment-type.enum';
-import { DeliveryType } from '../../models/delivery-type.enum';
-import { Order } from '../../models/order.model';
-import { SelectedModelService } from '../../services/selected-model.service';
 import { MatCardModule } from '@angular/material/card';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { OrderService, SelectedModelService } from '../../services';
+import { Order, PaymentType, DeliveryType } from '../../models';
 
 @Component({
   selector: 'app-order-form',
@@ -42,7 +42,7 @@ import { MatCardModule } from '@angular/material/card';
   templateUrl: './order-form.component.html',
   styleUrls: ['./order-form.component.css'],
 })
-export class OrderFormComponent implements OnInit {
+export class OrderFormComponent implements OnInit, OnDestroy {
   orderForm!: FormGroup;
   paymentTypes = Object.values(PaymentType);
   deliveryTypes = Object.values(DeliveryType);
@@ -60,9 +60,20 @@ export class OrderFormComponent implements OnInit {
   selectedModel: string = '';
   minDate: Date;
 
+  private destroy$ = new Subject<void>();
+
+  futureDateValidator: ValidatorFn = (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+    const selectedDate = new Date(control.value);
+    const currentDate = new Date();
+    return selectedDate <= currentDate ? { pastDate: true } : null;
+  };
+
   constructor(
     private fb: FormBuilder,
     private selectedModelService: SelectedModelService,
+    private orderService: OrderService,
     private router: Router
   ) {
     const today = new Date();
@@ -77,7 +88,7 @@ export class OrderFormComponent implements OnInit {
     this.orderForm = this.fb.group({
       paymentType: ['', Validators.required],
       deliveryType: ['', Validators.required],
-      deliveryDate: [null, [Validators.required, this.futureDateValidator()]],
+      deliveryDate: [null, [Validators.required, this.futureDateValidator]],
       deliveryTime: ['', Validators.required],
       deliveryAddress: this.fb.group({
         firstName: ['', Validators.required],
@@ -95,19 +106,21 @@ export class OrderFormComponent implements OnInit {
       price: [{ value: 0, disabled: true }, Validators.required],
     });
 
-    this.selectedModelService.selectedModel$.subscribe((model) => {
-      this.selectedModel = model;
-      this.updatePrice();
-    });
+    this.selectedModelService.selectedModel$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((model) => {
+        if (model) {
+          this.selectedModel = model;
+          this.updatePrice();
+        }
+      });
   }
 
-  futureDateValidator(): ValidatorFn {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const selectedDate = new Date(control.value);
-      const currentDate = new Date();
-      return selectedDate <= currentDate ? { pastDate: true } : null;
-    };
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
+
   createAuthorizedUser(): FormGroup {
     return this.fb.group({
       firstName: ['', Validators.required],
@@ -124,13 +137,11 @@ export class OrderFormComponent implements OnInit {
   }
 
   addAuthorizedUser(): void {
-    (this.orderForm.get('authorizedUsers') as FormArray).push(
-      this.createAuthorizedUser()
-    );
+    this.authorizedUsers.push(this.createAuthorizedUser());
   }
 
   removeAuthorizedUser(index: number): void {
-    (this.orderForm.get('authorizedUsers') as FormArray).removeAt(index);
+    this.authorizedUsers.removeAt(index);
   }
 
   updatePrice(): void {
@@ -143,9 +154,29 @@ export class OrderFormComponent implements OnInit {
       const deliveryDate = this.orderForm.value.deliveryDate;
       const deliveryTime = this.orderForm.value.deliveryTime;
 
-      const [hours, minutes] = deliveryTime
-        .split(':')
-        .map((val: string) => parseInt(val, 10));
+      const timeParts = deliveryTime.split(':');
+      if (timeParts.length !== 2) {
+        console.log('Niepoprawny format czasu dostawy.');
+        this.orderForm.get('deliveryTime')?.setErrors({ invalidFormat: true });
+        return;
+      }
+
+      const [hours, minutes] = timeParts.map((val: string) =>
+        parseInt(val, 10)
+      );
+      if (
+        isNaN(hours) ||
+        isNaN(minutes) ||
+        hours < 0 ||
+        hours > 23 ||
+        minutes < 0 ||
+        minutes > 59
+      ) {
+        console.log('Niepoprawny czas dostawy.');
+        this.orderForm.get('deliveryTime')?.setErrors({ invalidTime: true });
+        return;
+      }
+
       const deliveryDateTime = new Date(deliveryDate);
       deliveryDateTime.setHours(hours, minutes, 0, 0);
 
@@ -158,7 +189,7 @@ export class OrderFormComponent implements OnInit {
         price: this.orderForm.get('price')?.value,
       };
 
-      sessionStorage.setItem('orderData', JSON.stringify(orderData));
+      this.orderService.setOrderData(orderData);
 
       this.router.navigate(['/summary']);
     } else {

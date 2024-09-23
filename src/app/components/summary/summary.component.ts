@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { ConfigurationData } from '../../models/configuration.model';
-import { Order } from '../../models/order.model';
+import { OrderService, ConfigurationService } from '../../services';
+import { Order, ConfigurationData } from '../../models';
 
 @Component({
   selector: 'app-summary',
@@ -13,17 +13,22 @@ import { Order } from '../../models/order.model';
   styleUrls: ['./summary.component.css'],
 })
 export class SummaryComponent implements OnInit {
-  configurationData: ConfigurationData | null = null;
   orderData: Order | null = null;
+  configurationData: ConfigurationData | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private orderService: OrderService,
+    private configurationService: ConfigurationService
+  ) {}
 
   ngOnInit(): void {
-    const configJson = sessionStorage.getItem('configurationData');
-    const orderJson = sessionStorage.getItem('orderData');
+    this.orderData = this.orderService.getOrderData();
+    this.configurationData = this.configurationService.getConfigurationData();
 
-    this.configurationData = configJson ? JSON.parse(configJson) : null;
-    this.orderData = orderJson ? JSON.parse(orderJson) : null;
+    if (!this.orderData || !this.configurationData) {
+      this.router.navigate(['/configuration']);
+    }
   }
 
   goToHome(): void {

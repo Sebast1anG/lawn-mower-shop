@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -11,10 +11,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
-import { LawnMowerService } from '../../services/lawn-mower.service';
-import { SelectedModelService } from '../../services/selected-model.service';
-import { EngineType } from '../../models/engine-type.enum';
 import { MatCardModule } from '@angular/material/card';
+import { Subject } from 'rxjs';
+import { takeUntil, switchMap } from 'rxjs/operators';
+import {
+  ConfigurationService,
+  LawnMowerService,
+  SelectedModelService,
+} from '../../services';
+import { ConfigurationData, EngineType } from '../../models';
 
 @Component({
   selector: 'app-configuration-form',
@@ -31,17 +36,20 @@ import { MatCardModule } from '@angular/material/card';
   templateUrl: './configuration-form.component.html',
   styleUrls: ['./configuration-form.component.css'],
 })
-export class ConfigurationFormComponent implements OnInit {
+export class ConfigurationFormComponent implements OnInit, OnDestroy {
   configurationForm!: FormGroup;
   engineTypes = Object.values(EngineType);
   brands: string[] = [];
   models: string[] = [];
   selectedEngineType: EngineType | null = null;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private fb: FormBuilder,
     private lawnMowerService: LawnMowerService,
     private selectedModelService: SelectedModelService,
+    private configurationService: ConfigurationService,
     private router: Router
   ) {}
 
@@ -52,42 +60,47 @@ export class ConfigurationFormComponent implements OnInit {
       model: ['', Validators.required],
     });
 
-    this.lawnMowerService
-      .getBrands()
-      .subscribe((brands) => (this.brands = brands));
+    this.configurationForm
+      .get('brand')
+      ?.valueChanges.pipe(
+        takeUntil(this.destroy$),
+        switchMap((brand: string) => this.lawnMowerService.getModels(brand))
+      )
+      .subscribe((models) => (this.models = models));
+
+    this.configurationForm
+      .get('model')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((model: string) => {
+        this.selectedModelService.setSelectedModel(model);
+      });
 
     this.configurationForm
       .get('engineType')
-      ?.valueChanges.subscribe((engineType: EngineType) => {
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((engineType: EngineType) => {
         this.selectedEngineType = engineType;
         this.updateFormControls(engineType);
       });
 
-    this.configurationForm
-      .get('brand')
-      ?.valueChanges.subscribe((brand: string) => {
-        this.lawnMowerService
-          .getModels(brand)
-          .subscribe((models) => (this.models = models));
-      });
+    this.lawnMowerService
+      .getBrands()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((brands) => (this.brands = brands));
+  }
 
-    this.configurationForm
-      .get('model')
-      ?.valueChanges.subscribe((model: string) => {
-        this.selectedModelService.setSelectedModel(model);
-      });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   updateFormControls(engineType: EngineType): void {
-    if (this.configurationForm.contains('combustionSpecs')) {
-      this.configurationForm.removeControl('combustionSpecs');
-    }
-    if (this.configurationForm.contains('electricSpecs')) {
-      this.configurationForm.removeControl('electricSpecs');
-    }
-    if (this.configurationForm.contains('batterySpecs')) {
-      this.configurationForm.removeControl('batterySpecs');
-    }
+    const controlNames = ['combustionSpecs', 'electricSpecs', 'batterySpecs'];
+    controlNames.forEach((controlName) => {
+      if (this.configurationForm.contains(controlName)) {
+        this.configurationForm.removeControl(controlName);
+      }
+    });
 
     if (engineType === EngineType.Combustion) {
       this.configurationForm.addControl(
@@ -142,12 +155,9 @@ export class ConfigurationFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.configurationForm.valid) {
-      const configurationData = this.configurationForm.value;
+      const configurationData: ConfigurationData = this.configurationForm.value;
 
-      sessionStorage.setItem(
-        'configurationData',
-        JSON.stringify(configurationData)
-      );
+      this.configurationService.setConfigurationData(configurationData);
 
       this.router.navigate(['/order']);
     } else {

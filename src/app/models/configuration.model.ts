@@ -1,5 +1,4 @@
-import { BatterySpecs } from './battery-specs.model';
-import { CombustionSpecs } from './combustion-specs.model';
+import { BatterySpecs, CombustionSpecs } from '../models';
 
 export interface ConfigurationData {
   engineType: string;

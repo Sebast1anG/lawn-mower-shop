@@ -1,6 +1,4 @@
-import { PaymentType } from './payment-type.enum';
-import { DeliveryType } from './delivery-type.enum';
-import { Address } from './address.model';
+import { PaymentType, DeliveryType, Address } from '../models';
 
 export interface Order {
   paymentType: PaymentType;

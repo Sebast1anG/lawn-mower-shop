@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class SelectedModelService {
-  private selectedModelSubject = new BehaviorSubject<string>('HRX217');
+  private selectedModelSubject = new BehaviorSubject<string | null>(null);
   selectedModel$ = this.selectedModelSubject.asObservable();
 
   setSelectedModel(model: string): void {
